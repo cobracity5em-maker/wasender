@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WASender</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/assets/logo.png?v=2" alt="WASender" class="brand-logo-img" />
+        <div class="brand-name">WASender</div>
+        <div class="brand-sub" data-i18n="brand_sub">פלטפורמת ניהול WhatsApp</div>
+      </div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-tab="sessions"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span> <span data-i18n="nav_sessions">חשבונות</span></button>
+        <button class="nav-item" data-tab="mailbox"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span> <span data-i18n="nav_mailbox">תיבת דואר</span></button>
+        <button class="nav-item" data-tab="campaigns"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span> <span data-i18n="nav_campaigns">קמפיינים</span></button>
+        <button class="nav-item" data-tab="warmer"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c4-2.5 6-5.5 6-9.5 0-4.5-2.5-7-6-11-3.5 4-6 6.5-6 11 0 4 2 7 6 9.5z"/><path d="M12 22v-4"/><path d="M10 14c0-1.5.8-2.5 2-3.5 1.2 1 2 2 2 3.5a2 2 0 1 1-4 0z"/></svg></span> <span data-i18n="nav_warmer">חימום</span></button>
+        <button class="nav-item" data-tab="send"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span> <span data-i18n="nav_send">שליחה</span></button>
+        <button class="nav-item" data-tab="contacts"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M12 7v6"/><path d="M9 10h6"/></svg></span> <span data-i18n="nav_contacts">אנשי קשר</span></button>
+        <button class="nav-item" data-tab="groups"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> <span data-i18n="nav_groups">קבוצות</span></button>
+        <button class="nav-item" data-tab="stats"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> <span data-i18n="nav_stats">סטטיסטיקות</span></button>
+        <button class="nav-item" data-tab="tools"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span> <span data-i18n="nav_tools">כלים</span></button>
+        <button class="nav-item" data-tab="settings"><span class="nav-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span> <span data-i18n="nav_settings">הגדרות</span></button>
+      </nav>
+
+      <div class="side-foot">
+        <div id="healthBadge" class="status-pill status-wait" data-i18n-health="1">…</div>
+        <div class="side-copyright">© 2026 DARKO · All rights reserved</div>
+        
+      </div>
+    </aside>
+
+    <main class="main">
+      <!-- SESSIONS -->
+      <section id="tab-sessions" class="view active">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="sessions_title">חשבונות מחוברים</h1>
+            <p class="view-desc" data-i18n="sessions_desc">חבר מספר WhatsApp בסריקת QR. הסשן נשמר ונפתח מחדש אוטומטית.</p>
+          </div>
+          <button class="btn btn-primary" id="btnQuickConnect" data-i18n="btn_quick_connect">+ חיבור מהיר</button>
+        </header>
+
+        <div class="connect-card" id="connectCard" hidden>
+          <div class="connect-grid">
+            <div class="connect-form">
+              <h2 data-i18n="connect_title">חיבור חשבון חדש</h2>
+              <p class="muted" data-i18n="connect_hint">בחר שם לזיהוי, התחל, וסרוק את ה-QR מהטלפון.</p>
+              <label class="field">
+                <span data-i18n="lbl_session_name">שם לזיהוי (אנגלית)</span>
+                <input id="sessionName" type="text" placeholder="account1" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="lbl_session_label">תווית (אופציונלי)</span>
+                <input id="sessionLabel" type="text" placeholder="Sales" autocomplete="off" />
+              </label>
+              <div class="row-actions">
+                <button class="btn btn-primary" id="btnDoCreate" data-i18n="btn_start_qr">התחל וסרוק QR</button>
+                <button class="btn btn-ghost" id="btnCancelCreate" data-i18n="btn_cancel">ביטול</button>
+              </div>
+              <ol class="steps">
+                <li data-i18n="step1">לחץ «התחל וסרוק QR»</li>
+                <li data-i18n="step2">בטלפון: WhatsApp ← מכשירים מקושרים ← קישור מכשיר</li>
+                <li data-i18n="step3">סרוק את הקוד שמופיע כאן</li>
+              </ol>
+            </div>
+            <div class="qr-panel" id="qrPanel">
+              <div class="qr-placeholder" id="qrPlaceholder" data-i18n="qr_placeholder">ה-QR יופיע כאן</div>
+              <img id="qrImage" alt="QR" hidden />
+              <div class="qr-status" id="qrStatus"></div>
+            </div>
+          </div>
+        </div>
+        <div id="sessionsList" class="cards-grid"></div>
+      </section>
+
+      <!-- MAILBOX -->
+      <section id="tab-mailbox" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="mailbox_title">תיבת דואר</h1>
+            <p class="view-desc" data-i18n="mailbox_desc">שיחות מכל החשבונות — פרטי וקבוצות.</p>
+          </div>
+          <div id="mailboxStats" class="chip">0</div>
+        </header>
+
+        <div class="toolbar mailbox-toolbar">
+          <label class="field compact">
+            <span data-i18n="lbl_account">חשבון</span>
+            <select id="mailboxSession"><option value="" data-i18n="opt_all_accounts">כל החשבונות</option></select>
+          </label>
+          <label class="field compact">
+            <span data-i18n="lbl_type">סוג</span>
+            <select id="mailboxType">
+              <option value="" data-i18n="opt_all">הכל</option>
+              <option value="private" data-i18n="opt_private">פרטי</option>
+              <option value="group" data-i18n="opt_group">קבוצה</option>
+            </select>
+          </label>
+          <div class="toolbar-actions">
+            <button type="button" class="btn btn-ghost" id="btnMailboxClear" data-i18n="btn_clear">נקה</button>
+            <button type="button" class="btn btn-ghost" id="btnMailboxRefresh" data-i18n="btn_refresh">רענון</button>
+          </div>
+        </div>
+
+        <div class="mailbox">
+          <aside class="mailbox-list" id="mailboxChats">
+            <div class="empty-state" data-i18n="mailbox_empty_list">אין שיחות עדיין</div>
+          </aside>
+          <section class="mailbox-thread-wrap">
+            <div class="thread-header" id="threadHeader" hidden>
+              <div class="thread-avatar" id="threadAvatar">?</div>
+              <div class="thread-head-text">
+                <div class="thread-title" id="threadTitle">—</div>
+                <div class="thread-meta" id="threadMeta"></div>
+              </div>
+            </div>
+            <div class="mailbox-thread" id="mailboxMessages">
+              <div class="empty-state" data-i18n="mailbox_empty_thread">בחר שיחה מהרשימה</div>
+            </div>
+            <div class="reply-bar" id="replyBox" hidden>
+              <input type="hidden" id="replyChatJid" />
+              <input type="hidden" id="replySessionId" />
+              <div class="reply-tools">
+                <label class="reply-tool-btn reply-attach" title="צרף קובץ / תמונה / וידאו" data-i18n-title="title_attach">
+                  <input type="file" id="replyMedia" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.xls,.xlsx,.zip" hidden />
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                </label>
+                <div class="reply-emoji-wrap emoji-toolbar">
+                  <button type="button" class="reply-tool-btn btn-emoji-ico" id="btnReplyEmoji" title="אימוג׳ים" data-i18n-title="title_emoji" aria-label="emoji">😊</button>
+                </div>
+                <div class="emoji-popover" id="replyEmojiPop" hidden></div>
+              </div>
+              <span class="reply-file-name" id="replyFileName" hidden></span>
+              <input id="replyText" type="text" data-i18n-placeholder="ph_reply" placeholder="כתוב הודעה…" autocomplete="off" />
+              <button class="btn btn-primary btn-reply-send" id="btnReply" data-i18n="btn_send">שלח</button>
+            </div>
+      
+          </section>
+        </div>
+      </section>
+
+      <!-- CAMPAIGNS -->
+      <section id="tab-campaigns" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="campaigns_title">קמפיינים</h1>
+            <p class="view-desc" data-i18n="campaigns_desc">שליחה עם כתיבה אנושית, תזמון, קבצים ואימוג׳ים.</p>
+          </div>
+          <button class="btn btn-primary" id="btnNewCampaign" data-i18n="btn_new_campaign">+ קמפיין חדש</button>
+        </header>
+
+        <div class="panel campaign-form-panel" id="campaignForm" hidden>
+          <div class="campaign-form-head">
+            <h2 id="campaignFormTitle" data-i18n="campaign_form_title">קמפיין חדש</h2>
+            <p class="muted" data-i18n="campaigns_desc">שליחה עם כתיבה אנושית, תזמון, קבצים ואימוג׳ים.</p>
+          </div>
+          <input type="hidden" id="campId" />
+
+          <div class="camp-section">
+            <div class="camp-section-title" data-i18n="lbl_camp_name">שם הקמפיין</div>
+            <label class="field"><input id="campName" type="text" placeholder="Campaign name" /></label>
+          </div>
+
+          <div class="camp-section">
+            <div class="camp-section-title" data-i18n="lbl_sender">חשבונות שולחים (מרובים)</div>
+            <p class="muted camp-hint" data-i18n="multi_send_hint">בחר כמה חשבונות מחוברים — ההודעות יתחלקו ביניהם (round-robin) להפחתת סיכון.</p>
+            <div id="campSessions" class="session-check-grid"></div>
+          </div>
+
+          <div class="camp-section">
+            <div class="camp-section-title" data-i18n="lbl_message">הודעה</div>
+            <label class="field"><textarea id="campMessage" rows="4" placeholder="{{name}}"></textarea></label>
+            <div class="emoji-toolbar">
+              <button type="button" class="btn btn-ghost btn-sm" id="btnCampEmoji" data-i18n="btn_emoji">אימוג׳ים</button>
+              <div class="emoji-popover" id="campEmojiPop" hidden></div>
+            </div>
+          </div>
+
+          <div class="camp-section camp-two">
+            <div>
+              <div class="camp-section-title" data-i18n="lbl_numbers">מספרים</div>
+              <label class="field"><textarea id="campNumbers" rows="5" placeholder="+972501234567"></textarea></label>
+            </div>
+            <div>
+              <div class="camp-section-title" data-i18n="lbl_media">תמונה / וידאו</div>
+              <label class="field file-field">
+                <span class="file-btn" data-i18n="btn_choose_file">בחר קובץ</span>
+                <input type="file" id="campMedia" accept="image/*,video/*" />
+                <span class="file-chosen muted" id="campMediaName" data-i18n="lbl_no_file">לא נבחר קובץ</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="camp-section">
+            <div class="camp-section-title" data-i18n="timeline_title">מרווחי זמן (Timeline)</div>
+            <div class="form-grid three">
+              <label class="field"><span data-i18n="lbl_delay_min">השהייה מינ׳ (שניות)</span><input id="campDelayMin" type="number" value="12" min="3" /></label>
+              <label class="field"><span data-i18n="lbl_delay_max">השהייה מקס׳ (שניות)</span><input id="campDelayMax" type="number" value="40" min="5" /></label>
+              <label class="field"><span data-i18n="lbl_skip_days">דילוג אם קיבל ב־X ימים</span><input id="campSkipDays" type="number" value="7" min="0" /></label>
+            </div>
+            <div class="checks checks-row">
+              <label class="check"><input type="checkbox" id="campTyping" checked /> <span data-i18n="chk_typing">כתיבה אנושית</span></label>
+              <label class="check"><input type="checkbox" id="campEmojis" checked /> <span data-i18n="chk_emoji_var">וריאציית אימוג׳ים</span></label>
+            </div>
+          </div>
+
+          <div class="camp-section safe-send-panel">
+            <div class="camp-section-title" data-i18n="lbl_safe_send">הגנת שליחה (אנטי־חסימה)</div>
+            <div class="form-grid three">
+              <label class="field"><span data-i18n="lbl_safe_profile">פרופיל בטיחות</span>
+                <select id="campSafeProfile">
+                  <option value="safe" data-i18n="profile_safe">בטוח (איטי)</option>
+                  <option value="balanced" selected data-i18n="profile_balanced">מאוזן</option>
+                  <option value="fast" data-i18n="profile_fast">מהיר (סיכון גבוה)</option>
+                </select>
+              </label>
+              <label class="field"><span data-i18n="lbl_max_hour">מקס׳ לשעה / סשן</span><input type="number" id="campMaxHour" min="0" max="100" value="25" /></label>
+              <label class="field"><span data-i18n="lbl_max_day">מקס׳ ליום / סשן</span><input type="number" id="campMaxDay" min="0" max="500" value="120" /></label>
+            </div>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_quiet_start">שעות שקט — מ־</span><input type="time" id="campQuietStart" /></label>
+              <label class="field"><span data-i18n="lbl_quiet_end">עד</span><input type="time" id="campQuietEnd" /></label>
+            </div>
+            <p class="muted safe-hint" data-i18n="safe_send_hint">פרופיל בטוח = השהיות ארוכות, הגבלת קצב, הקלדה אנושית וסיבוב סשנים חכם.</p>
+          </div>
+
+          <div class="camp-section">
+            <label class="check schedule-toggle"><input type="checkbox" id="campScheduleEn" /> <span data-i18n="chk_schedule">תזמון אוטומטי</span></label>
+          </div>
+
+          <div class="schedule-box" id="scheduleBox" hidden>
+            <h3 data-i18n="schedule_title">תזמון</h3>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_start_date">תאריך התחלה</span><input type="date" id="campStartDate" /></label>
+              <label class="field"><span data-i18n="lbl_start_time">שעת התחלה</span><input type="time" id="campStartTime" value="10:00" /></label>
+            </div>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_stop_date">תאריך עצירה (אופציונלי)</span><input type="date" id="campStopDate" /></label>
+              <label class="field"><span data-i18n="lbl_stop_time">שעת עצירה</span><input type="time" id="campStopTime" /></label>
+            </div>
+            <p class="muted" data-i18n="schedule_hint">הקמפיין יופעל בזמן ההתחלה. אם הוגדרה עצירה — ייעצר אוטומטית.</p>
+          </div>
+
+          <div class="row-actions camp-actions">
+            <button class="btn btn-primary" id="btnSaveCampaign" data-i18n="btn_save">שמור</button>
+            <button class="btn btn-ghost" id="btnCancelCampaign" data-i18n="btn_cancel">ביטול</button>
+          </div>
+        </div>
+
+        <div id="campaignsList"></div>
+        <div id="campaignLog" class="log" hidden></div>
+      </section>
+
+      <!-- WARMER -->
+      <section id="tab-warmer" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="warmer_title">חימום חשבונות</h1>
+            <p class="view-desc" data-i18n="warmer_desc">החשבונות שולחים הודעות קצרות זה לזה.</p>
+          </div>
+          <div id="warmerBadge" class="chip chip-off" data-i18n="status_off">כבוי</div>
+        </header>
+        <div class="panel">
+          <label class="field"><span data-i18n="lbl_pick_sessions">בחר לפחות שני חשבונות</span></label>
+          <div id="warmerSessions" class="checks wrap"></div>
+          <div class="form-grid three">
+            <label class="field"><span data-i18n="lbl_mode">מצב</span>
+              <select id="warmerMode">
+                <option value="gentle" data-i18n="mode_gentle">עדין</option>
+                <option value="normal" data-i18n="mode_normal">רגיל</option>
+                <option value="active" data-i18n="mode_active">פעיל</option>
+              </select>
+            </label>
+            <label class="field"><span data-i18n="lbl_delay_min">השהייה מינ׳</span><input id="warmerMin" type="number" value="30" min="10" /></label>
+            <label class="field"><span data-i18n="lbl_delay_max">השהייה מקס׳</span><input id="warmerMax" type="number" value="120" min="20" /></label>
+          </div>
+          <div class="row-actions warmer-actions">
+            <button class="btn btn-primary" id="btnStartWarmer" data-i18n="btn_start_warmer">הפעל חימום</button>
+            <button class="btn btn-danger" id="btnStopWarmer" data-i18n="btn_stop">עצור</button>
+          </div>
+          <div class="warmer-stats-row">
+            <div class="warmer-stat">
+              <span class="warmer-stat-label" data-i18n="stat_sent">נשלחו</span>
+              <strong id="wSent">0</strong>
+            </div>
+            <div class="warmer-stat">
+              <span class="warmer-stat-label" data-i18n="stat_errors">שגיאות</span>
+              <strong id="wErrors">0</strong>
+            </div>
+            <div class="warmer-stat">
+              <span class="warmer-stat-label" data-i18n="stat_last">אחרון</span>
+              <strong id="wLast">—</strong>
+            </div>
+            <div class="warmer-stat warmer-stat-ready">
+              <span class="warmer-stat-label" data-i18n="stat_ready">מוכנים</span>
+              <strong id="wReady">0/0</strong>
+            </div>
+          </div>
+          <div class="warmer-live-block">
+            <div class="camp-section-title" data-i18n="warmer_live_title">מצב חימום לפי חשבון</div>
+            <div id="warmerSessionStatus" class="warmer-status-grid"></div>
+          </div>
+          <div id="warmerLog" class="log"></div>
+        </div>
+      </section>
+
+      <!-- SEND -->
+      <section id="tab-send" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="send_title">שליחת הודעות</h1>
+            <p class="view-desc" data-i18n="send_desc">הודעה בודדת, רשימה או קובץ — עם אימוג׳ים ומדיה.</p>
+          </div>
+        </header>
+        <div class="panel">
+          <div class="camp-section">
+            <div class="camp-section-title" data-i18n="lbl_sender">חשבונות שולחים</div>
+            <p class="muted camp-hint" data-i18n="multi_send_hint">ניתן לבחור כמה חשבונות — שליחה מחולקת ביניהם.</p>
+            <div id="sendSessions" class="session-check-grid"></div>
+            <select id="sendSession" hidden></select>
+          </div>
+          <label class="field"><span data-i18n="lbl_message">הודעה</span><textarea id="sendMessage" rows="3"></textarea></label>
+          <div class="emoji-toolbar">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnSendEmoji" data-i18n="btn_emoji">אימוג׳ים</button>
+            <div class="emoji-popover" id="sendEmojiPop" hidden></div>
+          </div>
+          <label class="field file-field"><span data-i18n="lbl_media">תמונה / וידאו</span>
+            <span class="file-btn" data-i18n="btn_choose_file">בחר קובץ</span>
+            <input type="file" id="sendMedia" accept="image/*,video/*" />
+            <span class="file-chosen muted" id="sendMediaName" data-i18n="lbl_no_file">לא נבחר קובץ</span>
+          </label>
+          <div class="seg">
+            <button class="seg-btn active" data-inner="single" data-i18n="seg_single">בודדת</button>
+            <button class="seg-btn" data-inner="bulk" data-i18n="seg_bulk">רשימה</button>
+            <button class="seg-btn" data-inner="file" data-i18n="seg_file">קובץ</button>
+          </div>
+          <div id="inner-single" class="inner active">
+            <label class="field"><span data-i18n="lbl_number">מספר</span><input id="sendTo" type="text" placeholder="+97250..." /></label>
+            <button class="btn btn-primary" id="btnSendSingle" data-i18n="btn_send">שלח</button>
+          </div>
+          <div id="inner-bulk" class="inner">
+            <label class="field"><span data-i18n="lbl_numbers">מספרים</span><textarea id="sendBulkList" rows="5"></textarea></label>
+            <div class="form-grid two">
+              <label class="field"><span data-i18n="lbl_delay_min">השהייה מינ׳</span><input id="bulkMin" type="number" value="3" /></label>
+              <label class="field"><span data-i18n="lbl_delay_max">השהייה מקס׳</span><input id="bulkMax" type="number" value="8" /></label>
+            </div>
+            <button class="btn btn-primary" id="btnSendBulk" data-i18n="btn_send_list">שלח לרשימה</button>
+          </div>
+          <div id="inner-file" class="inner">
+            <label class="field file-field">
+              <span class="file-btn" data-i18n="btn_choose_file">בחר קובץ</span>
+              <input type="file" id="sendFile" accept=".txt,.csv" />
+              <span class="file-chosen muted" id="sendFileName" data-i18n="lbl_no_file">לא נבחר קובץ</span>
+            </label>
+            <button class="btn btn-primary" id="btnSendFile" data-i18n="btn_send_file">שלח מקובץ</button>
+          </div>
+
+          <div class="camp-section send-options">
+            <div class="camp-section-title" data-i18n="send_options_title">אפשרויות שליחה</div>
+            <div class="form-grid three">
+              <label class="field"><span data-i18n="lbl_delay_min">השהייה מינ׳ (שניות)</span><input id="sendDelayMin" type="number" value="12" min="1" /></label>
+              <label class="field"><span data-i18n="lbl_delay_max">השהייה מקס׳ (שניות)</span><input id="sendDelayMax" type="number" value="40" min="2" /></label>
+              <label class="field"><span data-i18n="lbl_skip_days">דילוג אם קיבל ב־X ימים</span><input id="sendSkipDays" type="number" value="0" min="0" /></label>
+            </div>
+            <div class="checks checks-row">
+              <label class="check"><input type="checkbox" id="sendTyping" checked /> <span data-i18n="chk_typing">כתיבה אנושית</span></label>
+              <label class="check"><input type="checkbox" id="sendEmojis" checked /> <span data-i18n="chk_emoji_var">וריאציית אימוג׳ים</span></label>
+            </div>
+          </div>
+
+          <div class="camp-section safe-send-panel">
+            <div class="camp-section-title" data-i18n="lbl_safe_send">הגנת שליחה (אנטי־חסימה)</div>
+            <div class="form-grid three">
+              <label class="field"><span data-i18n="lbl_safe_profile">פרופיל בטיחות</span>
+                <select id="sendSafeProfile">
+                  <option value="safe" data-i18n="profile_safe">בטוח (איטי)</option>
+                  <option value="balanced" selected data-i18n="profile_balanced">מאוזן</option>
+                  <option value="fast" data-i18n="profile_fast">מהיר (סיכון גבוה)</option>
+                </select>
+              </label>
+              <label class="field"><span data-i18n="lbl_max_hour">מקס׳ לשעה / סשן</span><input type="number" id="sendMaxHour" min="0" max="100" value="25" /></label>
+              <label class="field"><span data-i18n="lbl_max_day">מקס׳ ליום / סשן</span><input type="number" id="sendMaxDay" min="0" max="500" value="120" /></label>
+            </div>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_quiet_start">שעות שקט — מ־</span><input type="time" id="sendQuietStart" /></label>
+              <label class="field"><span data-i18n="lbl_quiet_end">עד</span><input type="time" id="sendQuietEnd" /></label>
+            </div>
+            <p class="muted safe-hint" data-i18n="safe_send_hint">פרופיל בטוח = השהיות ארוכות, הגבלת קצב, הקלדה אנושית וסיבוב סשנים חכם.</p>
+          </div>
+
+          <div class="camp-section">
+            <label class="check schedule-toggle"><input type="checkbox" id="sendScheduleEn" /> <span data-i18n="chk_schedule">תזמון אוטומטי</span></label>
+          </div>
+
+          <div class="schedule-box" id="sendScheduleBox" hidden>
+            <h3 data-i18n="schedule_title">תזמון</h3>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_start_date">תאריך התחלה</span><input type="date" id="sendStartDate" /></label>
+              <label class="field"><span data-i18n="lbl_start_time">שעת התחלה</span><input type="time" id="sendStartTime" value="10:00" /></label>
+            </div>
+            <div class="form-grid">
+              <label class="field"><span data-i18n="lbl_stop_date">תאריך עצירה (אופציונלי)</span><input type="date" id="sendStopDate" /></label>
+              <label class="field"><span data-i18n="lbl_stop_time">שעת עצירה</span><input type="time" id="sendStopTime" /></label>
+            </div>
+            <p class="muted" data-i18n="send_schedule_hint">השליחה תתחיל בזמן שנבחר. אם הוגדרה עצירה — תיעצר אוטומטית.</p>
+          </div>
+
+          <pre id="sendResult" class="result" hidden></pre>
+        </div>
+      </section>
+
+      <!-- GROUPS -->
+      
+      <!-- CONTACTS -->
+      <section id="tab-contacts" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="contacts_title">אנשי קשר</h1>
+            <p class="view-desc" data-i18n="contacts_desc">ייבוא וייצוא אנשי קשר ומספרים מהסשן — TXT או PDF.</p>
+          </div>
+        </header>
+
+        <div class="panel">
+          <div class="settings-grid">
+            <label class="field">
+              <span data-i18n="lbl_account">חשבון</span>
+              <select id="contactsSession"></select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_contacts_source">מקור</span>
+              <select id="contactsMode">
+                <option value="all" selected data-i18n="contacts_mode_all">הכל משולב</option>
+                <option value="contacts" data-i18n="contacts_mode_saved">אנשי קשר שמורים</option>
+                <option value="chats" data-i18n="contacts_mode_chats">ממספרי צ׳אטים</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_export_format">פורמט ייצוא</span>
+              <select id="contactsFormat">
+                <option value="txt">TXT</option>
+                <option value="pdf">PDF</option>
+              </select>
+            </label>
+          </div>
+          <div class="settings-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+            <button class="btn btn-primary" id="btnContactsLoad" data-i18n="btn_contacts_load">טען רשימה</button>
+            <button class="btn btn-primary" id="btnContactsExport" data-i18n="btn_contacts_export">ייצוא</button>
+          </div>
+          <pre id="contactsPreview" class="result" hidden></pre>
+          <div id="contactsDownload" class="muted" style="margin-top:8px"></div>
+        </div>
+
+        <div class="panel">
+          <h2 class="settings-h" data-i18n="contacts_import_title">ייבוא מספרים</h2>
+          <p class="muted" data-i18n="contacts_import_hint">הדבק מספרים (שורה לכל מספר) או העלה קובץ TXT. המספרים מנורמלים עם קידומת בינלאומית.</p>
+          <label class="field">
+            <span data-i18n="lbl_numbers">מספרים</span>
+            <textarea id="contactsImportText" rows="6" placeholder="+97250..."></textarea>
+          </label>
+          <label class="field">
+            <span data-i18n="lbl_import_file">קובץ TXT</span>
+            <label class="file-field" style="display:block;margin-top:6px">
+              <span class="file-btn" data-i18n="btn_choose_file">בחר קובץ</span>
+              <input type="file" id="contactsImportFile" accept=".txt,.csv,text/plain" />
+              <span class="file-chosen muted" id="contactsImportFileName" data-i18n="lbl_no_file">לא נבחר קובץ</span>
+            </label>
+          </label>
+          <label class="check settings-check">
+            <input type="checkbox" id="contactsImportCheck" />
+            <span data-i18n="chk_contacts_wa">בדוק מי קיים ב־WhatsApp</span>
+          </label>
+          <div class="settings-actions" style="margin-top:12px">
+            <button class="btn btn-primary" id="btnContactsImport" data-i18n="btn_contacts_import">ייבוא</button>
+          </div>
+          <pre id="contactsImportResult" class="result" hidden></pre>
+        </div>
+      </section>
+
+<section id="tab-groups" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="groups_title">קבוצות</h1>
+            <p class="view-desc" data-i18n="groups_desc">טעינה, חילוץ מספרים והוספת חברים.</p>
+          </div>
+        </header>
+        <div class="panel">
+          <label class="field"><span data-i18n="lbl_account">חשבון</span><select id="groupSession"></select></label>
+          <button class="btn btn-primary" id="btnLoadGroups" data-i18n="btn_load_groups">טען קבוצות</button>
+          <div id="groupsList" class="list-block"></div>
+        </div>
+        <div class="panel" id="extractBox" hidden>
+          <h2 data-i18n="extract_title">חילוץ מספרים</h2>
+          <p id="extractGroupName" class="muted"></p>
+          <button class="btn btn-primary" id="btnExtract" data-i18n="btn_extract">חלץ לקובץ</button>
+          <div id="extractResult" class="result" hidden></div>
+        </div>
+        <div class="panel">
+          <h2 data-i18n="add_members_title">הוספת חברים</h2>
+          <label class="field"><span data-i18n="lbl_group_id">מזהה קבוצה</span><input id="addGroupId" type="text" /></label>
+          <label class="field"><span data-i18n="lbl_numbers">מספרים</span><textarea id="addNumbers" rows="4"></textarea></label>
+          <button class="btn btn-primary" id="btnAddMembers" data-i18n="btn_add">הוסף</button>
+          <pre id="addResult" class="result" hidden></pre>
+        </div>
+      </section>
+
+      <!-- TOOLS -->
+      
+      <!-- STATS -->
+      <section id="tab-stats" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="stats_title">סטטיסטיקות ודוחות</h1>
+            <p class="view-desc" data-i18n="stats_desc">מעקב בזמן אמת אחר פעילות המערכת.</p>
+          </div>
+          <div class="head-actions">
+            <button class="btn btn-ghost btn-sm" id="btnStatsRefresh" data-i18n="btn_refresh">רענון</button>
+            <button class="btn btn-ghost btn-sm" id="btnStatsClear" data-i18n="btn_clear_log">נקה לוג</button>
+          </div>
+        </header>
+
+        <div class="stats-cards" id="statsCards">
+          <div class="stat-card"><div class="stat-label" data-i18n="stat_uptime">Uptime</div><div class="stat-value" id="stUptime">—</div></div>
+          <div class="stat-card"><div class="stat-label" data-i18n="nav_sessions">חשבונות</div><div class="stat-value" id="stSessions">0</div><div class="stat-sub" id="stSessionsSub">—</div></div>
+          <div class="stat-card"><div class="stat-label" data-i18n="nav_mailbox">תיבת דואר</div><div class="stat-value" id="stMailbox">0</div><div class="stat-sub" id="stMailboxSub">—</div></div>
+          <div class="stat-card"><div class="stat-label" data-i18n="nav_campaigns">קמפיינים</div><div class="stat-value" id="stCamps">0</div><div class="stat-sub" id="stCampsSub">—</div></div>
+          <div class="stat-card"><div class="stat-label" data-i18n="stat_messages">הודעות (7י)</div><div class="stat-value" id="stMsg">0</div><div class="stat-sub" id="stMsgSub">—</div></div>
+          <div class="stat-card"><div class="stat-label" data-i18n="stat_ratio">הצלחה / כישלון</div><div class="stat-value" id="stRatio">—</div><div class="stat-sub" id="stToday">—</div></div>
+        </div>
+
+        <div class="panel stats-filter-panel">
+          <div class="stats-filter-row">
+            <label class="field stats-cat-field">
+              <span data-i18n="lbl_category">קטגוריה</span>
+              <select id="statsCategory">
+                <option value="" data-i18n="cat_all">הכל</option>
+                <option value="message" data-i18n="cat_message">הודעות</option>
+                <option value="campaign" data-i18n="cat_campaign">קמפיינים</option>
+                <option value="session" data-i18n="cat_session">סשנים</option>
+                <option value="warmer" data-i18n="cat_warmer">חימום</option>
+                <option value="mailbox" data-i18n="cat_mailbox">תיבת דואר</option>
+                <option value="group" data-i18n="cat_group">קבוצות</option>
+                <option value="system" data-i18n="cat_system">מערכת</option>
+              </select>
+            </label>
+            <button type="button" class="btn btn-ghost btn-sm" id="btnStatsFilter" data-i18n="btn_filter">סנן</button>
+          </div>
+          <div class="stats-breakdown" id="statsBreakdown"></div>
+          <h3 class="stats-activity-title" data-i18n="stats_recent">פעילות אחרונה</h3>
+          <div class="activity-log" id="statsActivity">
+            <div class="empty-state" data-i18n="stats_empty">אין נתונים עדיין</div>
+          </div>
+        </div>
+      </section>
+
+<section id="tab-tools" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="tools_title">כלים</h1>
+            <p class="view-desc" data-i18n="tools_desc">בדיקת מספרים ומצב מערכת.</p>
+          </div>
+        </header>
+        <div class="panel">
+          <h2 data-i18n="check_title">בדיקה ב־WhatsApp</h2>
+          <label class="field"><span data-i18n="lbl_account">חשבון</span><select id="checkSession"></select></label>
+          <label class="field"><span data-i18n="lbl_numbers">מספרים</span><textarea id="checkNumbers" rows="4"></textarea></label>
+          <button class="btn btn-primary" id="btnCheck" data-i18n="btn_check">בדוק</button>
+          <pre id="checkResult" class="result" hidden></pre>
+        </div>
+        <div class="panel">
+          <h2 data-i18n="sys_title">מצב מערכת</h2>
+          <div class="stats-row">
+            <div>Uptime: <strong id="sysUptime">—</strong></div>
+            <div data-i18n="nav_sessions">חשבונות</div>: <strong id="sysSessions">0</strong>
+            <div data-i18n="nav_warmer">חימום</div>: <strong id="sysWarmer">—</strong>
+            <div data-i18n="nav_mailbox">תיבת דואר</div>: <strong id="sysMailbox">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section id="tab-settings" class="view">
+        <header class="view-head">
+          <div>
+            <h1 data-i18n="settings_title">הגדרות ממשק</h1>
+            <p class="view-desc" data-i18n="settings_desc">שפה, ערכת נושא ואפשרויות תצוגה.</p>
+          </div>
+        </header>
+        <div class="panel">
+          <h2 class="settings-h" data-i18n="set_section_display">תצוגה</h2>
+          <div class="settings-grid">
+            <label class="field">
+              <span data-i18n="lbl_language">שפה</span>
+              <select id="setLang">
+                <option value="he">עברית</option>
+                <option value="en">English</option>
+                <option value="ar">العربية</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_theme">ערכת נושא</span>
+              <select id="setTheme">
+                <option value="dark" data-i18n="theme_dark">כהה</option>
+                <option value="light" data-i18n="theme_light">בהיר</option>
+                <option value="system" data-i18n="theme_system">לפי המערכת</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_density">צפיפות ממשק</span>
+              <select id="setDensity">
+                <option value="comfortable" data-i18n="density_comfy">נוח</option>
+                <option value="compact" data-i18n="density_compact">צפוף</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_font_scale">גודל טקסט</span>
+              <select id="setFontScale">
+                <option value="1">100%</option>
+                <option value="1.08">108%</option>
+                <option value="1.15">115%</option>
+              </select>
+            </label>
+          </div>
+          <div class="settings-checks">
+            <label class="check settings-check"><input type="checkbox" id="setReduceMotion" /> <span data-i18n="chk_reduce_motion">הפחתת אנימציות</span></label>
+            <label class="check settings-check"><input type="checkbox" id="setSound" checked /> <span data-i18n="chk_sound">צליל התראות</span></label>
+            <label class="check settings-check"><input type="checkbox" id="setDesktopNotif" /> <span data-i18n="chk_desktop_notif">התראות דפדפן</span></label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="settings-h" data-i18n="set_section_behavior">התנהגות</h2>
+          <div class="settings-grid">
+            <label class="field">
+              <span data-i18n="lbl_default_tab">מסך פתיחה</span>
+              <select id="setDefaultTab">
+                <option value="sessions" data-i18n="nav_sessions">חשבונות</option>
+                <option value="mailbox" data-i18n="nav_mailbox">תיבת דואר</option>
+                <option value="send" data-i18n="nav_send">שליחה</option>
+                <option value="campaigns" data-i18n="nav_campaigns">קמפיינים</option>
+                <option value="stats" data-i18n="nav_stats">סטטיסטיקות</option>
+              </select>
+            </label>
+            <label class="field">
+              <span data-i18n="lbl_mailbox_poll">רענון תיבת דואר (שנ׳)</span>
+              <input type="number" id="setMailboxPoll" min="3" max="60" value="8" />
+            </label>
+          </div>
+          <div class="settings-checks">
+            <label class="check settings-check"><input type="checkbox" id="setConfirmDanger" checked /> <span data-i18n="chk_confirm_danger">אישור לפני מחיקה</span></label>
+            <label class="check settings-check"><input type="checkbox" id="setAutoReconnect" checked /> <span data-i18n="chk_auto_reconnect">חיבור מחדש אוטומטי לסשנים</span></label>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2 class="settings-h" data-i18n="set_section_about">אודות</h2>
+          <p class="muted about-line">
+            <span data-i18n="about_text">WASender — ניהול סשנים, קמפיינים, שליחה ותיבת דואר ל־WhatsApp.</span>
+            <span class="about-ver" id="settingsVersion">v2.0</span>
+          </p>
+          <div class="settings-actions">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnResetSettings" data-i18n="btn_reset_settings">איפוס הגדרות</button>
+            <button type="button" class="btn btn-danger" id="btnLogoutApp" data-i18n="btn_logout">התנתק</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

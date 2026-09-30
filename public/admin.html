@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WASender — Admin</title>
+  <style>
+    :root {
+      --bg: #0b1220; --panel: #121a2b; --panel2: #0e1626; --line: rgba(255,255,255,.08);
+      --text: #e8eefc; --muted: #8b9bb8; --green: #22c55e; --danger: #ef4444; --warn: #f59e0b;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, Segoe UI, Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+    .top {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 14px 20px; border-bottom: 1px solid var(--line);
+      background: color-mix(in srgb, var(--panel) 90%, #000);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; }
+    .logo { width: 34px; height: 34px; border-radius: 10px; background: linear-gradient(135deg, var(--green), #0ea5e9); display: grid; place-items: center; color: #04110a; font-weight: 900; }
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn {
+      border: 1px solid var(--line); background: var(--panel2); color: var(--text);
+      border-radius: 10px; padding: 8px 12px; font-weight: 700; font-size: 13px; cursor: pointer;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--green), #16a34a); color: #04110a; border: 0; }
+    .btn-danger { background: rgba(239,68,68,.15); border-color: rgba(239,68,68,.35); color: #fecaca; }
+    .btn-sm { padding: 6px 10px; font-size: 12px; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+    .grid { display: grid; grid-template-columns: 340px 1fr; gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 16px;
+    }
+    h2 { margin: 0 0 12px; font-size: 15px; }
+    label { display: block; font-size: 11px; font-weight: 700; color: var(--muted); margin: 10px 0 4px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line);
+      background: var(--panel2); color: var(--text); font-size: 13px;
+    }
+    textarea { min-height: 64px; resize: vertical; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .hint { font-size: 11px; color: var(--muted); margin-top: 8px; line-height: 1.4; }
+    .user-card {
+      border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+      background: var(--panel2);
+    }
+    .user-card.disabled { opacity: .65; }
+    .user-card.expired { border-color: rgba(245,158,11,.4); }
+    .u-top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+    .u-name { font-weight: 800; font-size: 14px; }
+    .badge {
+      font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px;
+      background: rgba(34,197,94,.15); color: var(--green);
+    }
+    .badge.off { background: rgba(239,68,68,.15); color: #fecaca; }
+    .badge.warn { background: rgba(245,158,11,.15); color: #fcd34d; }
+    .badge.admin { background: rgba(59,130,246,.15); color: #93c5fd; }
+    .u-meta { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+    .u-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .devices { margin-top: 8px; font-size: 12px; }
+    .device-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px dashed var(--line); }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: #0f172a; border: 1px solid var(--line); padding: 10px 16px; border-radius: 12px;
+      font-weight: 700; font-size: 13px; display: none; z-index: 50;
+    }
+    .toast.show { display: block; }
+    .empty { color: var(--muted); text-align: center; padding: 24px; }
+  
+    .modal-bg {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55); display: none;
+      align-items: center; justify-content: center; z-index: 40; padding: 16px;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      width: min(400px, 100%); background: var(--panel); border: 1px solid var(--line);
+      border-radius: 16px; padding: 18px;
+    }
+    .modal h3 { margin: 0 0 12px; font-size: 15px; }
+    .sec-banner {
+      background: rgba(245,158,11,.12); border: 1px solid rgba(245,158,11,.35);
+      color: #fcd34d; padding: 10px 12px; border-radius: 12px; font-size: 12px; font-weight: 700;
+      margin-bottom: 14px; display: none;
+    }
+    .sec-banner.show { display: block; }
+</style>
+</head>
+<body>
+  <div class="top">
+    <div class="brand"><div class="logo">A</div><div>Admin Panel · WASender</div></div>
+    <div class="top-actions">
+      <button class="btn" id="btnApp">Open app</button>
+      <button class="btn" id="btnChangePass">Change password</button>
+      <button class="btn" id="btnRefresh">Refresh</button>
+      <button class="btn btn-danger" id="btnLogout">Logout</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="grid">
+      <div class="panel">
+        <h2>Create client account</h2>
+        <form id="createForm">
+          <label>Username</label>
+          <input id="cUser" required minlength="3" autocomplete="off" />
+          <label>Password</label>
+          <input id="cPass" type="password" required minlength="6" />
+          <div class="row">
+            <div>
+              <label>Days of access</label>
+              <input id="cDays" type="number" min="0" value="30" />
+            </div>
+            <div>
+              <label>Max devices</label>
+              <input id="cDevices" type="number" min="1" max="20" value="1" />
+            </div>
+          </div>
+          <label>Note (optional)</label>
+          <textarea id="cNote" placeholder="Client name / plan"></textarea>
+          <button class="btn btn-primary" style="width:100%;margin-top:14px" type="submit">Create account</button>
+        </form>
+        <p class="hint">Default: 1 device only. Increase max devices to allow more. 0 days = no expiry.</p>
+      </div>
+      <div class="panel">
+        <h2>Accounts <span id="count" style="color:var(--muted);font-weight:600"></span></h2>
+        <div id="list" class="empty">Loading…</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="modal-bg" id="passModal">
+    <div class="modal">
+      <h3>Change admin password</h3>
+      <div class="sec-banner show">Use a strong password (8+ chars, letters + numbers). Default admin123 is blocked.</div>
+      <label>Current password</label>
+      <input type="password" id="oldPass" autocomplete="current-password" />
+      <label>New password</label>
+      <input type="password" id="newPass" autocomplete="new-password" />
+      <label>Confirm new password</label>
+      <input type="password" id="newPass2" autocomplete="new-password" />
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <button class="btn btn-primary" id="btnSavePass" style="flex:1">Save</button>
+        <button class="btn" id="btnCancelPass">Cancel</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const DEVICE_KEY = 'ws_device_id';
+    const token = () => localStorage.getItem('ws_token');
+    const deviceId = () => localStorage.getItem(DEVICE_KEY) || '';
+    function headers() {
+      return {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer ' + token(),
+        'X-Device-Id': deviceId()
+      };
+    }
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2200);
+    }
+    async function api(method, url, body) {
+      const res = await fetch(url, { method, headers: headers(), body: body ? JSON.stringify(body) : undefined });
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401 || res.status === 403) {
+        if (data.error === 'admin_only' || data.error === 'unauthorized') {
+          location.href = '/login.html?next=admin';
+          throw new Error(data.error);
+        }
+      }
+      if (!res.ok || data.success === false) throw new Error(data.error || 'request_failed');
+      return data;
+    }
+    async function ensureAdmin() {
+      if (!token()) { location.href = '/login.html?next=admin'; return false; }
+      try {
+        const d = await api('GET', '/api/auth/me');
+        if (!d.user || d.user.role !== 'admin') {
+          toast('Admin only');
+          location.href = '/';
+          return false;
+        }
+        return true;
+      } catch {
+        location.href = '/login.html?next=admin';
+        return false;
+      }
+    }
+    function fmtDate(iso) {
+      if (!iso) return 'Never expires';
+      const d = new Date(iso);
+      return d.toLocaleString();
+    }
+    function statusBadge(u) {
+      if (u.role === 'admin') return '<span class="badge admin">admin</span>';
+      if (!u.enabled) return '<span class="badge off">disabled</span>';
+      if (u.expiresAt && new Date(u.expiresAt).getTime() < Date.now()) return '<span class="badge warn">expired</span>';
+      return '<span class="badge">active</span>';
+    }
+    async function load() {
+      const data = await api('GET', '/api/admin/users');
+      const users = data.users || [];
+      document.getElementById('count').textContent = '(' + users.length + ')';
+      const box = document.getElementById('list');
+      if (!users.length) { box.innerHTML = '<div class="empty">No accounts</div>'; return; }
+      box.innerHTML = users.map(u => {
+        const expired = u.expiresAt && new Date(u.expiresAt).getTime() < Date.now();
+        const devices = (u.devices || []).map(d => `
+          <div class="device-row">
+            <span>${escapeHtml(d.label || d.id)} · ${d.lastSeen ? new Date(d.lastSeen).toLocaleString() : ''}</span>
+            ${u.role !== 'admin' ? `<button class="btn btn-sm btn-danger" data-rev="${u.id}" data-did="${d.id}">Revoke</button>` : ''}
+          </div>`).join('') || '<div class="u-meta">No devices yet</div>';
+        return `<div class="user-card ${u.enabled ? '' : 'disabled'} ${expired ? 'expired' : ''}">
+          <div class="u-top">
+            <div class="u-name">${escapeHtml(u.username)}</div>
+            ${statusBadge(u)}
+          </div>
+          <div class="u-meta">
+            Expires: ${fmtDate(u.expiresAt)}<br/>
+            Devices: ${u.deviceCount || 0} / ${u.maxDevices || 1}
+            ${u.note ? '<br/>Note: ' + escapeHtml(u.note) : ''}
+          </div>
+          <div class="devices">${devices}</div>
+          ${u.role !== 'admin' ? `<div class="u-actions">
+            <button class="btn btn-sm" data-ext="${u.id}" data-days="7">+7 days</button>
+            <button class="btn btn-sm" data-ext="${u.id}" data-days="30">+30 days</button>
+            <button class="btn btn-sm" data-toggle="${u.id}" data-en="${u.enabled ? '0' : '1'}">${u.enabled ? 'Disable' : 'Enable'}</button>
+            <button class="btn btn-sm" data-dev="${u.id}">Set devices</button>
+            <button class="btn btn-sm" data-pass="${u.id}">Reset pass</button>
+            <button class="btn btn-sm btn-danger" data-del="${u.id}">Delete</button>
+          </div>` : ''}
+        </div>`;
+      }).join('');
+
+      box.querySelectorAll('[data-ext]').forEach(btn => btn.onclick = async () => {
+        try {
+          await api('PATCH', '/api/admin/users/' + btn.dataset.ext, { extendDays: Number(btn.dataset.days) });
+          toast('Extended +' + btn.dataset.days + ' days');
+          load();
+        } catch (e) { toast(e.message); }
+      });
+      box.querySelectorAll('[data-toggle]').forEach(btn => btn.onclick = async () => {
+        try {
+          await api('PATCH', '/api/admin/users/' + btn.dataset.toggle, { enabled: btn.dataset.en === '1' });
+          toast('Updated');
+          load();
+        } catch (e) { toast(e.message); }
+      });
+      box.querySelectorAll('[data-del]').forEach(btn => btn.onclick = async () => {
+        if (!confirm('Delete account?')) return;
+        try {
+          await api('DELETE', '/api/admin/users/' + btn.dataset.del);
+          toast('Deleted');
+          load();
+        } catch (e) { toast(e.message); }
+      });
+      box.querySelectorAll('[data-dev]').forEach(btn => btn.onclick = async () => {
+        const n = prompt('Max devices (1–20):', '1');
+        if (!n) return;
+        try {
+          await api('PATCH', '/api/admin/users/' + btn.dataset.dev, { maxDevices: Number(n) });
+          toast('Max devices updated');
+          load();
+        } catch (e) { toast(e.message); }
+      });
+      box.querySelectorAll('[data-pass]').forEach(btn => btn.onclick = async () => {
+        const p = prompt('New password (min 4):');
+        if (!p) return;
+        try {
+          await api('PATCH', '/api/admin/users/' + btn.dataset.pass, { password: p });
+          toast('Password reset');
+        } catch (e) { toast(e.message); }
+      });
+      box.querySelectorAll('[data-rev]').forEach(btn => btn.onclick = async () => {
+        try {
+          await api('POST', '/api/admin/users/' + btn.dataset.rev + '/revoke-device', { deviceId: btn.dataset.did });
+          toast('Device revoked');
+          load();
+        } catch (e) { toast(e.message); }
+      });
+    }
+    function escapeHtml(s) {
+      return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+    document.getElementById('createForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const days = Number(document.getElementById('cDays').value) || 0;
+      const expiresAt = days > 0 ? new Date(Date.now() + days * 86400000).toISOString() : null;
+      try {
+        await api('POST', '/api/admin/users', {
+          username: document.getElementById('cUser').value.trim(),
+          password: document.getElementById('cPass').value,
+          expiresAt,
+          maxDevices: Number(document.getElementById('cDevices').value) || 1,
+          note: document.getElementById('cNote').value
+        });
+        toast('Account created');
+        e.target.reset();
+        document.getElementById('cDays').value = 30;
+        document.getElementById('cDevices').value = 1;
+        load();
+      } catch (err) {
+        toast(err.message);
+      }
+    };
+    document.getElementById('btnRefresh').onclick = () => load().catch(e => toast(e.message));
+    document.getElementById('btnChangePass').onclick = () => {
+      document.getElementById('passModal').classList.add('show');
+      document.getElementById('oldPass').value = '';
+      document.getElementById('newPass').value = '';
+      document.getElementById('newPass2').value = '';
+    };
+    document.getElementById('btnCancelPass').onclick = () => document.getElementById('passModal').classList.remove('show');
+    document.getElementById('btnSavePass').onclick = async () => {
+      const oldPassword = document.getElementById('oldPass').value;
+      const newPassword = document.getElementById('newPass').value;
+      const newPassword2 = document.getElementById('newPass2').value;
+      if (newPassword !== newPassword2) return toast('Passwords do not match');
+      if (newPassword.length < 8) return toast('Min 8 characters');
+      try {
+        await api('POST', '/api/auth/change-password', { oldPassword, newPassword });
+        document.getElementById('passModal').classList.remove('show');
+        toast('Password changed');
+        localStorage.removeItem('ws_must_change_pass');
+      } catch (e) {
+        const map = { invalid_credentials: 'Current password wrong', password_weak: 'Password too weak', password_short: 'Password too short' };
+        toast(map[e.message] || e.message);
+      }
+    };
+
+    document.getElementById('btnApp').onclick = () => location.href = '/';
+    document.getElementById('btnLogout').onclick = async () => {
+      try { await api('POST', '/api/auth/logout'); } catch {}
+      localStorage.removeItem('ws_token');
+      localStorage.removeItem('ws_user');
+      location.href = '/login.html?next=admin';
+    };
+    (async () => {
+      if (await ensureAdmin()) {
+        await load();
+        if (localStorage.getItem('ws_must_change_pass') === '1') {
+          document.getElementById('passModal').classList.add('show');
+          toast('Please change the default admin password');
+        }
+      }
+    })();
+  </script>
+</body>
+</html>

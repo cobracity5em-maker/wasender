@@ -1,0 +1,26 @@
+WASender v2 - Windows Install
+
+The error "Cannot find module" means node_modules is missing or broken.
+
+DO THIS:
+
+1. Delete the folder: node_modules
+2. Delete the file: package-lock.json
+3. Open CMD in the project folder:
+   cd C:\Users\User\Downloads\wa-system
+4. Run:
+   npm install
+5. When install finishes with no errors, run:
+   npm start
+
+OR double-click INSTALL.bat (English version, no Hebrew).
+
+Never copy node_modules between computers.
+Always run npm install on the machine that runs the app.
+
+If npm install fails:
+  npm cache clean --force
+  npm install --force
+
+Need Node.js 18+: https://nodejs.org
+After start open: http://localhost:3000

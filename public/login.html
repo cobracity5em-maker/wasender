@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WASender — Login</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121a2b;
+      --line: rgba(255,255,255,.08);
+      --text: #e8eefc;
+      --muted: #8b9bb8;
+      --green: #22c55e;
+      --green2: #16a34a;
+      --danger: #ef4444;
+      --input: #0e1626;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh;
+      font-family: Inter, system-ui, Segoe UI, Arial, sans-serif;
+      background:
+        radial-gradient(ellipse at 20% 10%, rgba(34,197,94,.12), transparent 50%),
+        radial-gradient(ellipse at 80% 90%, rgba(59,130,246,.1), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      display: grid; place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--panel) 92%, #fff 2%), var(--panel));
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 32px 28px 28px;
+      box-shadow: 0 30px 80px rgba(0,0,0,.45);
+    }
+    .brand {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 22px;
+    }
+    .logo {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--green), #0ea5e9);
+      display: grid; place-items: center; font-weight: 900; color: #04110a;
+    }
+    .brand h1 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+    .brand p { margin: 2px 0 0; color: var(--muted); font-size: 12px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin: 14px 0 6px; }
+    input {
+      width: 100%; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--line); background: var(--input); color: var(--text);
+      font-size: 14px; outline: none;
+    }
+    input:focus { border-color: color-mix(in srgb, var(--green) 50%, var(--line)); }
+    .btn {
+      width: 100%; margin-top: 20px; border: 0; border-radius: 12px;
+      padding: 13px 16px; font-weight: 800; font-size: 14px; cursor: pointer;
+      background: linear-gradient(135deg, var(--green), var(--green2)); color: #04110a;
+    }
+    .btn:disabled { opacity: .6; cursor: wait; }
+    .err {
+      display: none; margin-top: 14px; padding: 10px 12px; border-radius: 10px;
+      background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35);
+      color: #fecaca; font-size: 13px; font-weight: 600;
+    }
+    .err.show { display: block; }
+    .foot { margin-top: 18px; text-align: center; color: var(--muted); font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">
+      <div class="logo">W</div>
+      <div>
+        <h1>WASender</h1>
+        <p>Sign in to continue</p>
+      </div>
+    </div>
+    <form id="loginForm">
+      <label for="username">Username</label>
+      <input id="username" name="username" autocomplete="username" required />
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
+      <button class="btn" id="btnLogin" type="submit">Sign in</button>
+      <div class="err" id="err"></div>
+    </form>
+    <div class="foot">© 2026 DARKO · Authorized access only</div>
+  </div>
+  <script>
+    const DEVICE_KEY = 'ws_device_id';
+    function deviceId() {
+      let id = localStorage.getItem(DEVICE_KEY);
+      if (!id) {
+        id = (crypto.randomUUID && crypto.randomUUID()) || ('d' + Math.random().toString(16).slice(2) + Date.now());
+        localStorage.setItem(DEVICE_KEY, id);
+      }
+      return id;
+    }
+    function deviceLabel() {
+      const ua = navigator.userAgent || '';
+      let os = 'Device';
+      if (/Windows/i.test(ua)) os = 'Windows';
+      else if (/Mac/i.test(ua)) os = 'Mac';
+      else if (/Android/i.test(ua)) os = 'Android';
+      else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+      else if (/Linux/i.test(ua)) os = 'Linux';
+      return os + ' · ' + (navigator.platform || 'web');
+    }
+    const msgs = {
+      invalid_credentials: 'Invalid username or password',
+      account_disabled: 'Account disabled — contact administrator',
+      account_expired: 'Subscription expired — renew to continue',
+      account_locked: 'Too many failed attempts — try again later',
+      rate_limited: 'Too many requests — slow down',
+      device_limit: 'Device limit reached. This account is locked to other device(s).',
+      device_mismatch: 'This session is bound to another device'
+    };
+    if (localStorage.getItem('ws_token')) {
+      // already logged in?
+      fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + localStorage.getItem('ws_token'), 'X-Device-Id': deviceId() } })
+        .then(r => r.json())
+        .then(d => {
+          if (d.success && d.user) {
+            if (d.user.role === 'admin' && location.search.includes('admin')) location.href = '/admin.html';
+            else location.href = '/';
+          }
+        }).catch(() => {});
+    }
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('btnLogin');
+      const err = document.getElementById('err');
+      err.classList.remove('show');
+      btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value,
+            deviceId: deviceId(),
+            deviceLabel: deviceLabel()
+          })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          let msg = msgs[data.error] || data.error || 'Login failed';
+          if (data.error === 'device_limit' && data.meta?.devices) {
+            msg += ' (' + data.meta.devices.join(', ') + ')';
+          }
+          err.textContent = msg;
+          err.classList.add('show');
+          btn.disabled = false;
+          return;
+        }
+        localStorage.setItem('ws_token', data.token);
+        localStorage.setItem('ws_device_id', data.deviceId || deviceId());
+        localStorage.setItem('ws_user', JSON.stringify(data.user));
+        if (data.mustChangePassword) localStorage.setItem('ws_must_change_pass', '1');
+        else localStorage.removeItem('ws_must_change_pass');
+        if (data.user.role === 'admin') {
+          location.href = '/admin.html';
+        } else {
+          location.href = '/';
+        }
+      } catch (ex) {
+        err.textContent = 'Cannot reach server';
+        err.classList.add('show');
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
